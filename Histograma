@@ -1,0 +1,11 @@
+# Crear el histograma								
+ggplot(data_long, aes(x = Marcador, y = Valor, fill = Tipo)) +								
+geom_bar(stat = "identity", position = "dodge") +								
+geom_errorbar(aes(ymin = Valor - SD, ymax = Valor + SD), position = position_dodge(0.9), width = 0.25) +								
+labs(title = "Valores de M1 y M2 con Desviación Estándar (Ordenado de Mayor a Menor)",								
+x = "Marcador",								
+y = "Valor") +								
+theme_minimal()								
+								
+# Guardar el gráfico								
+ggsave("histograma.png", width = 10, height = 6)								
