@@ -1,0 +1,28 @@
+# Definir los datos en R																									
+data <- data.frame(																									
+Marcador = c("COXIV", "GM130", "KDEL", "Y14", "HPalfa", "PML", "H3K4", "Fibrilarina"),																									
+M1 = c(0.2803333333, 0.756, 0.6416666667, 0.1075, 0.1183333333, 0.062, 0.037, 0.04166666667),																									
+M2 = c(0.2896666667, 0.139, 0.714, 0.0635, 0.1513333333, 0.002333333333, 0.064, 0.116),																									
+SD1 = c(0.0589255651, 0.01430617582, 0.04926346404, 0.0185, 0.04212151733, 0.05276994094, 0.006377042157, 0.01049867717),																									
+SD2 = c(0.09226893061, 0.0217919455, 0.07574958746, 0.0235, 0.02694851058, 0.001699673171, 0.005715476066, 0.04035674252)																									
+)																									
+																									
+# Calcular el promedio de M1 y M2 para cada marcador																									
+data <- data %>%																									
+rowwise() %>%																									
+mutate(Average = mean(c(M1, M2), na.rm = TRUE))																									
+																									
+# Ordenar los datos por el promedio																									
+data <- data %>%																									
+arrange(desc(Average))																									
+																									
+# Convertir los datos a formato largo para ggplot2																									
+data_long <- data %>%																									
+pivot_longer(cols = c(M1, M2), names_to = "Tipo", values_to = "Valor") %>%																									
+mutate(SD = ifelse(Tipo == "M1", SD1, SD2))																									
+																									
+# Convertir Marcador a factor para mantener el orden deseado en el gráfico																									
+data_long$Marcador <- factor(data_long$Marcador, levels = data$Marcador)																									
+																									
+# Mostrar el dataframe largo para verificar																									
+print(data_long)																									
