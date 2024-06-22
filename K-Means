@@ -1,0 +1,54 @@
+# Instalar y cargar paquetes necesarios
+if (!require(tidyverse)) install.packages("tidyverse")
+if (!require(ggpubr)) install.packages("ggpubr")
+if (!require(factoextra)) install.packages("factoextra")
+
+library(tidyverse)
+library(ggpubr)
+library(factoextra)
+
+# Definir los datos
+data <- data.frame(
+    Marcador = c("COXIV", "GM130", "KDEL", "Y14", "HPalfa", "PML", "H3K4", "Fibrilarina"),
+    M1 = c(0.2803333333, 0.756, 0.6416666667, 0.1075, 0.1183333333, 0.062, 0.037, 0.04166666667),
+    M2 = c(0.2896666667, 0.139, 0.714, 0.0635, 0.1513333333, 0.002333333333, 0.064, 0.116)
+)
+
+# Determinar el número óptimo de clusters usando el método del codo
+set.seed(123) # Para reproducibilidad
+wss <- function(k) {
+    kmeans(data[, 2:3], k, nstart = 10)$tot.withinss
+}
+
+k.values <- 1:7 # Ajustar el rango de valores k, no puede ser mayor que el número de observaciones
+
+# Extraer el total de la suma de cuadrados dentro del cluster para cada k
+wss_values <- map_dbl(k.values, wss)
+
+# Graficar el método del codo
+plot(k.values, wss_values,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Número de Clusters K",
+     ylab="Suma de cuadrados dentro del cluster")
+
+# Basado en el gráfico, seleccionar k = 3 (o el número que parezca adecuado)
+k_optimal <- 3
+
+# Aplicar k-means clustering con el número óptimo de clusters
+set.seed(123)
+kmeans_result <- kmeans(data[, 2:3], centers = k_optimal, nstart = 25)
+
+# Agregar resultados de clustering al dataframe
+data$Cluster <- as.factor(kmeans_result$cluster)
+
+# Visualizar los clusters con cada marcador en la leyenda y áreas (elipses) para cada cluster
+fviz_cluster(kmeans_result, data = data[, 2:3],
+             geom = "point",
+             ellipse.type = "norm",
+             palette = "jco",
+             ggtheme = theme_minimal()) +
+    geom_text(aes(label = data$Marcador), vjust = -1, size = 3) +
+    theme(legend.position = "right") +
+    labs(title = "Cluster plot",
+         x = "M1",
+         y = "M2")
